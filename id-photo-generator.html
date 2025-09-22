@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID Photo Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .drag-area {
+            border: 2px dashed #d1d5db;
+            transition: all 0.3s ease;
+        }
+        .drag-area.active {
+            border-color: #3b82f6;
+            background-color: #e0e7ff;
+        }
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip-container:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-2xl border border-gray-200">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Professional ID Photo</h1>
+            <span class="text-xs text-gray-400">AI-powered Processing</span>
+        </div>
+        <p class="text-gray-600 mb-6">Transform your personal photos into professional ID photos with a plain white background, optimized dimensions, and formal attire. Just upload your photo below!</p>
+        
+        <div id="upload-section" class="mb-8">
+            <div id="drag-area" class="drag-area flex flex-col items-center justify-center p-6 sm:p-12 rounded-xl text-center cursor-pointer transition-all duration-300">
+                <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <p class="text-gray-500 mb-1">Drag & drop your photo here</p>
+                <p class="text-gray-400 text-sm">or</p>
+                <label for="file-input" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full mt-2 cursor-pointer transition-colors duration-300">
+                    Browse Files
+                    <input type="file" id="file-input" class="hidden" accept="image/png, image/jpeg">
+                </label>
+            </div>
+            <div id="error-message" class="text-red-500 text-sm mt-2 text-center hidden"></div>
+        </div>
+
+        <div id="preview-section" class="flex flex-col items-center mb-8 hidden">
+            <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">Preview</h2>
+            <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8 w-full">
+                <div class="flex flex-col items-center">
+                    <p class="text-gray-500 text-sm mb-2">Original Photo</p>
+                    <div class="w-48 h-60 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
+                        <img id="original-preview" class="object-cover w-full h-full">
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center">
+                    <p class="text-gray-500 text-sm mb-2">Processed Photo</p>
+                    <div class="w-48 h-60 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
+                        <img id="processed-preview" class="object-cover w-full h-full hidden">
+                        <div id="loading-spinner" class="spinner hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="controls-section" class="mb-8 hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="outfit-select" class="block text-gray-700 font-medium mb-2">Formal Attire</label>
+                    <div class="relative tooltip-container">
+                        <select id="outfit-select" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="a formal male suit and tie">Male Suit and Tie</option>
+                            <option value="a formal female blazer">Female Blazer</option>
+                            <option value="a white collared shirt with a tie">White Shirt with Tie</option>
+                            <option value="a formal business dress">Formal Business Dress</option>
+                            <option value="a business casual shirt">Business Casual Shirt</option>
+                        </select>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 tooltip text-xs p-1 bg-gray-800 text-white rounded shadow-lg z-10">Select your preferred formal attire.</span>
+                    </div>
+                </div>
+                <div>
+                    <label for="background-select" class="block text-gray-700 font-medium mb-2">Background Color</label>
+                    <div class="relative tooltip-container">
+                        <select id="background-select" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="plain white background">White</option>
+                            <option value="plain light gray background">Light Gray</option>
+                            <option value="plain light blue background">Light Blue</option>
+                        </select>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 tooltip text-xs p-1 bg-gray-800 text-white rounded shadow-lg z-10">Choose a background color for your photo.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="button-section" class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 hidden">
+            <button id="generate-btn" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-full transition-colors duration-300">
+                Generate ID Photo
+            </button>
+            <a id="download-btn" class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-full text-center transition-colors duration-300 cursor-not-allowed hidden" download="id_photo.png">
+                Download Photo
+            </a>
+        </div>
+        
+        <div id="message-box" class="fixed inset-0 flex items-center justify-center p-4 z-50 hidden">
+            <div class="absolute inset-0 bg-black opacity-50"></div>
+            <div class="bg-white p-6 rounded-lg shadow-xl z-10 max-w-sm w-full text-center">
+                <p id="message-text" class="text-lg text-gray-700 mb-4"></p>
+                <button id="message-close-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full transition-colors duration-300">OK</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dragArea = document.getElementById('drag-area');
+            const fileInput = document.getElementById('file-input');
+            const originalPreview = document.getElementById('original-preview');
+            const processedPreview = document.getElementById('processed-preview');
+            const uploadSection = document.getElementById('upload-section');
+            const previewSection = document.getElementById('preview-section');
+            const controlsSection = document.getElementById('controls-section');
+            const buttonSection = document.getElementById('button-section');
+            const generateBtn = document.getElementById('generate-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const outfitSelect = document.getElementById('outfit-select');
+            const backgroundSelect = document.getElementById('background-select');
+            const errorMessage = document.getElementById('error-message');
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            const messageCloseBtn = document.getElementById('message-close-btn');
+
+            let uploadedFile = null;
+            let finalImageURL = null;
+
+            // --- UI Functions ---
+            const showMessage = (message) => {
+                messageText.textContent = message;
+                messageBox.classList.remove('hidden');
+            };
+
+            const hideMessage = () => {
+                messageBox.classList.add('hidden');
+            };
+
+            const showSection = (sectionId) => {
+                document.getElementById(sectionId).classList.remove('hidden');
+            };
+
+            const hideSection = (sectionId) => {
+                document.getElementById(sectionId).classList.add('hidden');
+            };
+            
+            // --- Drag & Drop Event Handlers ---
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dragArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            dragArea.addEventListener('dragenter', () => dragArea.classList.add('active'), false);
+            dragArea.addEventListener('dragleave', () => dragArea.classList.remove('active'), false);
+            dragArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                dragArea.classList.remove('active');
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                handleFile(file);
+            }
+
+            // --- File Input Handler ---
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                handleFile(file);
+            });
+
+            const handleFile = (file) => {
+                if (!file || !file.type.startsWith('image/')) {
+                    errorMessage.textContent = 'Please upload a valid image file (JPG or PNG).';
+                    errorMessage.classList.remove('hidden');
+                    return;
+                }
+                errorMessage.classList.add('hidden');
+                uploadedFile = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    originalPreview.src = e.target.result;
+                    showSection('preview-section');
+                    showSection('controls-section');
+                    showSection('button-section');
+                    hideSection('upload-section');
+                    processedPreview.classList.add('hidden');
+                    // Reset the download button appearance and state
+                    downloadBtn.classList.add('hidden', 'bg-gray-400', 'hover:bg-gray-500', 'cursor-not-allowed');
+                    downloadBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                    downloadBtn.href = "#";
+                    generateBtn.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            };
+
+            // --- Image Processing with Gemini API ---
+            generateBtn.addEventListener('click', async () => {
+                if (!uploadedFile) {
+                    showMessage('Please upload a photo first.');
+                    return;
+                }
+                
+                loadingSpinner.classList.remove('hidden');
+                processedPreview.classList.add('hidden');
+                generateBtn.textContent = 'Processing...';
+                generateBtn.disabled = true;
+
+                const reader = new FileReader();
+                reader.readAsDataURL(uploadedFile);
+                
+                reader.onloadend = async () => {
+                    const base64ImageData = reader.result.split(',')[1];
+                    const outfitChoice = outfitSelect.value;
+                    const backgroundColor = backgroundSelect.value;
+
+                    const userPrompt = `Transform this photo into a professional ID photo. The final image must have the following characteristics: 1) A ${backgroundColor}. 2) The subject should be centered in a half-body view (head and shoulders visible). 3) The subject should be facing forward with a confident expression. 4) The clothing should be replaced with ${outfitChoice}. 5) Any watermarks or logos must be removed. 6) The image must be cropped to a 45:35 aspect ratio (vertical:horizontal) and a high resolution suitable for printing.`;
+                    
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+
+                    const payload = {
+                        contents: [{
+                            parts: [
+                                { text: userPrompt },
+                                {
+                                    inlineData: {
+                                        mimeType: uploadedFile.type,
+                                        data: base64ImageData
+                                    }
+                                }
+                            ]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["IMAGE"]
+                        },
+                    };
+
+                    let retries = 0;
+                    const maxRetries = 3;
+
+                    while (retries < maxRetries) {
+                        try {
+                            const response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            const result = await response.json();
+                            const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+                            if (base64Data) {
+                                const imageUrl = `data:image/png;base64,${base64Data}`;
+                                processedPreview.src = imageUrl;
+                                processedPreview.classList.remove('hidden');
+                                downloadBtn.href = imageUrl;
+                                
+                                // Make the download button clickable and change its color
+                                downloadBtn.classList.remove('hidden', 'bg-gray-400', 'hover:bg-gray-500', 'cursor-not-allowed');
+                                downloadBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                                
+                                generateBtn.textContent = 'Generate Again';
+                                generateBtn.disabled = false;
+                                loadingSpinner.classList.add('hidden');
+                                break; // Exit loop on success
+                            } else {
+                                throw new Error('No image data found in response.');
+                            }
+
+                        } catch (error) {
+                            console.error('API request failed:', error);
+                            retries++;
+                            if (retries < maxRetries) {
+                                const delay = Math.pow(2, retries) * 1000;
+                                await new Promise(res => setTimeout(res, delay));
+                            } else {
+                                showMessage('Failed to process image. Please try again.');
+                                generateBtn.textContent = 'Generate ID Photo';
+                                generateBtn.disabled = false;
+                                loadingSpinner.classList.add('hidden');
+                            }
+                        }
+                    }
+                };
+            });
+
+            // --- Event Listeners for UI interaction ---
+            messageCloseBtn.addEventListener('click', hideMessage);
+        });
+    </script>
+</body>
+</html>
